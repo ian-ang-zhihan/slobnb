@@ -49,6 +49,7 @@ Desktop.ini
 *.pkl
 *.h5
 *.model
+*.json
 
 # Logs
 *.log
