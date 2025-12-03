@@ -1,8 +1,3 @@
----
-title: first_draft
-
----
-
 # SLOBnB First Draft
 - Ian Ang | izang@calpoly.edu
 
