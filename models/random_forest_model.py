@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pickle
 from sklearn.ensemble import RandomForestRegressor
 from preprocessing import run_preprocessing_pipeline
 from evaluation import evaluate_model, display_results, compare_to_baseline
@@ -7,14 +8,14 @@ from visualization import create_all_visualizations
 
 
 def train_random_forest(X_train, y_train, n_estimators=100, max_depth=None, 
-                       min_samples_split=2, random_state=42):
+                       min_samples_split=2, min_samples_leaf=1, random_state=42):
     """
     Train a Random Forest Regressor.
     
     Parameters:
     -----------
     X_train : pandas.DataFrame
-        Training features (one-hot encoded room_type + numerical features)
+        Training features
     y_train : pandas.Series
         Training prices (target variable)
     n_estimators : int, default=100
@@ -23,6 +24,8 @@ def train_random_forest(X_train, y_train, n_estimators=100, max_depth=None,
         Maximum depth of trees (None = unlimited)
     min_samples_split : int, default=2
         Minimum samples required to split a node
+    min_samples_leaf : int, default=1
+        Minimum samples required in each leaf node
     random_state : int, default=42
         Random seed for reproducibility
         
@@ -47,6 +50,7 @@ def train_random_forest(X_train, y_train, n_estimators=100, max_depth=None,
     print(f"  - Number of trees (n_estimators): {n_estimators}")
     print(f"  - Max depth (max_depth): {max_depth if max_depth else 'Unlimited'}")
     print(f"  - Min samples to split (min_samples_split): {min_samples_split}")
+    print(f"  - Min samples per leaf (min_samples_leaf): {min_samples_leaf}")
     print(f"  - Random state: {random_state}")
     
     # Create and train the model
@@ -54,6 +58,7 @@ def train_random_forest(X_train, y_train, n_estimators=100, max_depth=None,
         n_estimators=n_estimators,
         max_depth=max_depth,
         min_samples_split=min_samples_split,
+        min_samples_leaf=min_samples_leaf,
         random_state=random_state,
         n_jobs=-1  # Use all CPU cores for faster training
     )
@@ -133,12 +138,13 @@ def main():
     # Step 1: Get preprocessed data
     X_train, X_test, y_train, y_test = run_preprocessing_pipeline()
     
-    # Step 2: Train Random Forest
+    # Step 2: Train Random Forest with regularization to prevent overfitting
     rf_model = train_random_forest(
         X_train, y_train,
-        n_estimators=100,
-        max_depth=None,
-        min_samples_split=2,
+        n_estimators=200,      # Increased from 100 to 200 trees for more stable predictions
+        max_depth=15,          # Limit depth to prevent memorization
+        min_samples_split=10,  # Need 10+ samples to split (prevents noise)
+        min_samples_leaf=5,    # Each leaf must have 5+ samples (smoother predictions)
         random_state=42
     )
     
@@ -168,34 +174,47 @@ def main():
     print("="*70)
     print(f"\nRandom Forest Results (this run):")
     print(f"   Test RMSE: ${results['test']['rmse']:.2f}")
+    print(f"   Test MAE:  ${results['test']['mae']:.2f}")
     print(f"   Test R²:   {results['test']['r2']:.4f}")
     print(f"   Test MAPE: {results['test']['mape']:.2f}%")
     
-    lr_rmse = 198.06
-    lr_r2 = 0.6497
-    lr_mape = 44.94
-    print(f"\nLinear Regression Results (from previous run):")
+    # Updated values from Linear Regression
+    lr_rmse = 181.61
+    lr_mae = 128.98
+    lr_r2 = 0.7055
+    lr_mape = 43.10
+    print(f"\nLinear Regression Results:")
     print(f"   Test RMSE: ${lr_rmse}")
+    print(f"   Test MAE:  ${lr_mae}")
     print(f"   Test R²:   {lr_r2}")
     print(f"   Test MAPE: {lr_mape}%")
     
-    # Calculate improvement
+    # Calculate improvement (negative = RF worse, positive = RF better)
     rmse_improvement = ((lr_rmse - results['test']['rmse']) / lr_rmse) * 100
+    mae_improvement = ((lr_mae - results['test']['mae']) / lr_mae) * 100
     r2_improvement = results['test']['r2'] - lr_r2
     mape_improvement = ((lr_mape - results['test']['mape']) / lr_mape) * 100
     
-    print(f"\nIMPROVEMENTS (Random Forest vs Linear Regression):")
+    print(f"\nCOMPARISON (Random Forest vs Linear Regression):")
     print(f"   RMSE: {rmse_improvement:+.1f}% ({'better' if rmse_improvement > 0 else 'worse'})")
-    print(f"   R²:   {r2_improvement:+.4f} ({abs(r2_improvement)*100:.1f} percentage points)")
+    print(f"   MAE:  {mae_improvement:+.1f}% ({'better' if mae_improvement > 0 else 'worse'})")
+    print(f"   R²:   {r2_improvement:+.4f} ({abs(r2_improvement)*100:.1f} percentage points {'better' if r2_improvement > 0 else 'worse'})")
     print(f"   MAPE: {mape_improvement:+.1f}% ({'better' if mape_improvement > 0 else 'worse'})")
     
     print(f"\nVERDICT:")
-    if results['test']['r2'] > lr_r2:
+    if results['test']['r2'] > lr_r2 + 0.01:
         print(f"   Random Forest BEATS Linear Regression!")
-    elif results['test']['r2'] > lr_r2 - 0.02:
+    elif results['test']['r2'] > lr_r2 - 0.01:
         print(f"   Random Forest and Linear Regression perform similarly")
     else:
-        print(f"   Linear Regression slightly outperforms Random Forest")
+        print(f"   Linear Regression outperforms Random Forest")
+        print(f"      → Linear may be better suited for this dataset's linear patterns")
+    
+    # Save model for transfer learning
+    model_path = 'random_forest_model.pkl'
+    with open(model_path, 'wb') as f:
+        pickle.dump(rf_model, f)
+    print(f"\n Model saved to {model_path}")
     
     print("\nRandom forest pipeline complete!")
     

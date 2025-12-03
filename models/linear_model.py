@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pickle
 from sklearn.linear_model import LinearRegression
 from preprocessing import run_preprocessing_pipeline
 from evaluation import evaluate_model, display_results, compare_to_baseline
@@ -144,6 +145,12 @@ def main():
         'predictions': {}
     }
     compare_to_baseline(results, baseline_results)
+
+    # Save model for transfer learning
+    model_path = 'linear_model.pkl'
+    with open(model_path, 'wb') as f:
+        pickle.dump(linear_model, f)
+    print(f"\n✓ Model saved to {model_path}")
 
     print("\nLinear regression pipeline complete!")
     
