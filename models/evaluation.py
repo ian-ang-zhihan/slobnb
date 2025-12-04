@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.metrics import mean_squared_error, mean_absolute_error, median_absolute_error, r2_score
 
 
 def calculate_mape(y_true, y_pred):
@@ -64,6 +64,7 @@ def calculate_metrics(y_true, y_pred):
     return {
         'rmse': np.sqrt(mean_squared_error(y_true, y_pred)),
         'mae': mean_absolute_error(y_true, y_pred),
+        'mdae': median_absolute_error(y_true, y_pred),
         'r2': r2_score(y_true, y_pred),
         'mape': calculate_mape(y_true, y_pred)
     }
@@ -151,6 +152,7 @@ def display_results(results, y_test=None, show_examples=True):
     print(f"{'='*70}")
     print(f"RMSE: ${train['rmse']:>10.2f}  →  On average, off by ~${train['rmse']:.2f}")
     print(f"MAE:  ${train['mae']:>10.2f}  →  Average absolute error")
+    print(f"MdAE: ${train['mdae']:>10.2f}  →  Median absolute error")
     print(f"R²:   {train['r2']:>11.4f}  →  Explains {train['r2']*100:.2f}% of variance")
     print(f"MAPE: {train['mape']:>10.2f}%  →  Average % error")
     
@@ -160,6 +162,7 @@ def display_results(results, y_test=None, show_examples=True):
     print(f"{'='*70}")
     print(f"RMSE: ${test['rmse']:>10.2f}  →  On average, off by ~${test['rmse']:.2f}")
     print(f"MAE:  ${test['mae']:>10.2f}  →  Average absolute error")
+    print(f"MdAE: ${test['mdae']:>10.2f}  →  Median absolute error")
     print(f"R²:   {test['r2']:>11.4f}  →  Explains {test['r2']*100:.2f}% of variance")
     print(f"MAPE: {test['mape']:>10.2f}%  →  Average % error")
     
@@ -235,6 +238,8 @@ def compare_models(results_list, sort_by='test_r2', ascending=False):
             'Test RMSE': results['test']['rmse'],
             'Train MAE': results['train']['mae'],
             'Test MAE': results['test']['mae'],
+            'Train MdAE': results['train']['mdae'],
+            'Test MdAE': results['test']['mdae'],
             'Train R²': results['train']['r2'],
             'Test R²': results['test']['r2'],
             'Train MAPE': results['train']['mape'],
@@ -248,10 +253,12 @@ def compare_models(results_list, sort_by='test_r2', ascending=False):
         'test_r2': 'Test R²',
         'test_rmse': 'Test RMSE',
         'test_mae': 'Test MAE',
+        'test_mdae': 'Test MdAE',
         'test_mape': 'Test MAPE',
         'train_r2': 'Train R²',
         'train_rmse': 'Train RMSE',
         'train_mae': 'Train MAE',
+        'train_mdae': 'Train MdAE',
         'train_mape': 'Train MAPE'
     }
     
@@ -306,24 +313,28 @@ def compare_to_baseline(model_results, baseline_results):
     print(f"\n{model_name} Results:")
     print(f"   RMSE: ${model_test['rmse']:.2f}")
     print(f"   MAE:  ${model_test['mae']:.2f}")
+    print(f"   MdAE: ${model_test['mdae']:.2f}")
     print(f"   R²:   {model_test['r2']:.4f}")
     print(f"   MAPE: {model_test['mape']:.2f}%")
     
     print(f"\nBaseline Results:")
     print(f"   RMSE: ${baseline_test['rmse']:.2f}")
     print(f"   MAE:  ${baseline_test['mae']:.2f}")
+    print(f"   MdAE: ${baseline_test['mdae']:.2f}")
     print(f"   R²:   {baseline_test['r2']:.4f}")
     print(f"   MAPE: {baseline_test['mape']:.2f}%")
     
     # Calculate improvements
     rmse_improvement = ((baseline_test['rmse'] - model_test['rmse']) / baseline_test['rmse']) * 100
     mae_improvement = ((baseline_test['mae'] - model_test['mae']) / baseline_test['mae']) * 100
+    mdae_improvement = ((baseline_test['mdae'] - model_test['mdae']) / baseline_test['mdae']) * 100
     r2_improvement = model_test['r2'] - baseline_test['r2']
     mape_improvement = ((baseline_test['mape'] - model_test['mape']) / baseline_test['mape']) * 100
     
     print(f"\nIMPROVEMENTS:")
     print(f"   RMSE: {rmse_improvement:+.1f}% (${baseline_test['rmse'] - model_test['rmse']:+.2f})")
     print(f"   MAE:  {mae_improvement:+.1f}% (${baseline_test['mae'] - model_test['mae']:+.2f})")
+    print(f"   MdAE: {mdae_improvement:+.1f}% (${baseline_test['mdae'] - model_test['mdae']:+.2f})")
     print(f"   R²:   {r2_improvement:+.4f} ({r2_improvement*100:+.2f} percentage points)")
     print(f"   MAPE: {mape_improvement:+.1f}% ({baseline_test['mape'] - model_test['mape']:+.2f} percentage points)")
     

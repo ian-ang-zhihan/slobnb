@@ -187,8 +187,8 @@ def main():
     # Step 6: Compare to baseline
     baseline_results = {
         'model_name': 'Baseline (Mean Predictor)',
-        'train': {'rmse': 318.03, 'mae': 221.50, 'r2': 0.0000, 'mape': 97.31},
-        'test': {'rmse': 334.83, 'mae': 236.63, 'r2': -0.0012, 'mape': 99.71},
+        'train': {'rmse': 318.03, 'mae': 221.50, 'mdae': 183.69, 'r2': 0.0000, 'mape': 97.31},
+        'test': {'rmse': 334.83, 'mae': 236.63, 'mdae': 179.31, 'r2': -0.0012, 'mape': 99.71},
         'predictions': {}
     }
     compare_to_baseline(results, baseline_results)
@@ -201,53 +201,62 @@ def main():
     print(f"\nXGBoost Results (this run):")
     print(f"   Test RMSE: ${results['test']['rmse']:.2f}")
     print(f"   Test MAE:  ${results['test']['mae']:.2f}")
+    print(f"   Test MdAE: ${results['test']['mdae']:.2f}")
     print(f"   Test R²:   {results['test']['r2']:.4f}")
     print(f"   Test MAPE: {results['test']['mape']:.2f}%")
     
-    # Linear Regression baseline (with 26 features)
+    # Linear Regression 
     lr_rmse = 181.61
     lr_mae = 128.98
+    lr_mdae = 95.82
     lr_r2 = 0.7055
     lr_mape = 43.10
     
     print(f"\nLinear Regression Results (26 features):")
     print(f"   Test RMSE: ${lr_rmse:.2f}")
     print(f"   Test MAE:  ${lr_mae:.2f}")
+    print(f"   Test MdAE: ${lr_mdae:.2f}")
     print(f"   Test R²:   {lr_r2:.4f}")
     print(f"   Test MAPE: {lr_mape:.2f}%")
     
     # Random Forest baseline (200 trees, 26 features)
     rf_rmse = 175.04
     rf_mae = 116.15
+    rf_mdae = 77.96
     rf_r2 = 0.7283
     rf_mape = 37.92
     
     print(f"\nRandom Forest Results (200 trees, 26 features):")
     print(f"   Test RMSE: ${rf_rmse:.2f}")
     print(f"   Test MAE:  ${rf_mae:.2f}")
+    print(f"   Test MdAE: ${rf_mdae:.2f}")
     print(f"   Test R²:   {rf_r2:.4f}")
     print(f"   Test MAPE: {rf_mape:.2f}%")
     
     # Compare to Random Forest (current best)
     rmse_vs_rf = ((rf_rmse - results['test']['rmse']) / rf_rmse) * 100
     mae_vs_rf = ((rf_mae - results['test']['mae']) / rf_mae) * 100
+    mdae_vs_rf = ((rf_mdae - results['test']['mdae']) / rf_mdae) * 100
     r2_vs_rf = results['test']['r2'] - rf_r2
     mape_vs_rf = ((rf_mape - results['test']['mape']) / rf_mape) * 100
     
     print(f"\nXGBOOST vs RANDOM FOREST:")
     print(f"   RMSE: {rmse_vs_rf:+.1f}% ({'better' if rmse_vs_rf > 0 else 'worse'})")
     print(f"   MAE:  {mae_vs_rf:+.1f}% ({'better' if mae_vs_rf > 0 else 'worse'})")
+    print(f"   MdAE: {mdae_vs_rf:+.1f}% ({'better' if mdae_vs_rf > 0 else 'worse'})")
     print(f"   R²:   {r2_vs_rf:+.4f} ({abs(r2_vs_rf)*100:.1f} percentage points {'better' if r2_vs_rf > 0 else 'worse'})")
     print(f"   MAPE: {mape_vs_rf:+.1f}% ({'better' if mape_vs_rf > 0 else 'worse'})")
     
     # Compare to Linear Regression
     rmse_vs_lr = ((lr_rmse - results['test']['rmse']) / lr_rmse) * 100
     mae_vs_lr = ((lr_mae - results['test']['mae']) / lr_mae) * 100
+    mdae_vs_lr = ((lr_mdae - results['test']['mdae']) / lr_mdae) * 100
     r2_vs_lr = results['test']['r2'] - lr_r2
     
     print(f"\nXGBOOST vs LINEAR REGRESSION:")
     print(f"   RMSE: {rmse_vs_lr:+.1f}% ({'better' if rmse_vs_lr > 0 else 'worse'})")
     print(f"   MAE:  {mae_vs_lr:+.1f}% ({'better' if mae_vs_lr > 0 else 'worse'})")
+    print(f"   MdAE: {mdae_vs_lr:+.1f}% ({'better' if mdae_vs_lr > 0 else 'worse'})")
     print(f"   R²:   {r2_vs_lr:+.4f} ({abs(r2_vs_lr)*100:.1f} percentage points {'better' if r2_vs_lr > 0 else 'worse'})")
     
     print(f"\nVERDICT:")

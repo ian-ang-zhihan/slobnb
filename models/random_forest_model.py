@@ -162,8 +162,8 @@ def main():
     # (using hardcoded values from baseline run)
     baseline_results = {
         'model_name': 'Baseline (Mean Predictor)',
-        'train': {'rmse': 318.03, 'mae': 221.50, 'r2': 0.0000, 'mape': 97.31},
-        'test': {'rmse': 334.83, 'mae': 236.63, 'r2': -0.0012, 'mape': 99.71},
+        'train': {'rmse': 318.03, 'mae': 221.50, 'mdae': 183.69, 'r2': 0.0000, 'mape': 97.31},
+        'test': {'rmse': 334.83, 'mae': 236.63, 'mdae': 179.31, 'r2': -0.0012, 'mape': 99.71},
         'predictions': {}
     }
     compare_to_baseline(results, baseline_results)
@@ -175,29 +175,34 @@ def main():
     print(f"\nRandom Forest Results (this run):")
     print(f"   Test RMSE: ${results['test']['rmse']:.2f}")
     print(f"   Test MAE:  ${results['test']['mae']:.2f}")
+    print(f"   Test MdAE: ${results['test']['mdae']:.2f}")
     print(f"   Test R²:   {results['test']['r2']:.4f}")
     print(f"   Test MAPE: {results['test']['mape']:.2f}%")
     
     # Updated values from Linear Regression
     lr_rmse = 181.61
     lr_mae = 128.98
+    lr_mdae = 95.82
     lr_r2 = 0.7055
     lr_mape = 43.10
     print(f"\nLinear Regression Results:")
     print(f"   Test RMSE: ${lr_rmse}")
     print(f"   Test MAE:  ${lr_mae}")
+    print(f"   Test MdAE: ${lr_mdae}")
     print(f"   Test R²:   {lr_r2}")
     print(f"   Test MAPE: {lr_mape}%")
     
     # Calculate improvement (negative = RF worse, positive = RF better)
     rmse_improvement = ((lr_rmse - results['test']['rmse']) / lr_rmse) * 100
     mae_improvement = ((lr_mae - results['test']['mae']) / lr_mae) * 100
+    mdae_improvement = ((lr_mdae - results['test']['mdae']) / lr_mdae) * 100
     r2_improvement = results['test']['r2'] - lr_r2
     mape_improvement = ((lr_mape - results['test']['mape']) / lr_mape) * 100
     
     print(f"\nCOMPARISON (Random Forest vs Linear Regression):")
     print(f"   RMSE: {rmse_improvement:+.1f}% ({'better' if rmse_improvement > 0 else 'worse'})")
     print(f"   MAE:  {mae_improvement:+.1f}% ({'better' if mae_improvement > 0 else 'worse'})")
+    print(f"   MdAE: {mdae_improvement:+.1f}% ({'better' if mdae_improvement > 0 else 'worse'})")
     print(f"   R²:   {r2_improvement:+.4f} ({abs(r2_improvement)*100:.1f} percentage points {'better' if r2_improvement > 0 else 'worse'})")
     print(f"   MAPE: {mape_improvement:+.1f}% ({'better' if mape_improvement > 0 else 'worse'})")
     

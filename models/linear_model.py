@@ -140,8 +140,8 @@ def main():
     # (using hardcoded values from baseline run)
     baseline_results = {
         'model_name': 'Baseline (Mean Predictor)',
-        'train': {'rmse': 318.03, 'mae': 221.50, 'r2': 0.0000, 'mape': 97.31},
-        'test': {'rmse': 334.83, 'mae': 236.63, 'r2': -0.0012, 'mape': 99.71},
+        'train': {'rmse': 318.03, 'mae': 221.50, 'mdae': 183.69, 'r2': 0.0000, 'mape': 97.31},
+        'test': {'rmse': 334.83, 'mae': 236.63, 'mdae': 179.31, 'r2': -0.0012, 'mape': 99.71},
         'predictions': {}
     }
     compare_to_baseline(results, baseline_results)
